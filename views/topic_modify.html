@@ -1,0 +1,54 @@
+{{template "base/T.header.tpl" .}}
+<title>{{.Topic.Title}}- 我的beego 博客</title>
+</head>
+<body>
+{{template "base/T.navbar.tpl" .}}
+<!--text begind-->
+<div class="zero-clipboard" style="margin-top: 20px;">
+  <div class="container">
+    <div class="page-header">
+      <h1>修改文章</h1>
+      <form method="post" action="/topic">
+        <div class="form-group">
+          <input type="hidden" name="tid" value="{{.Tid}}"/>
+          <label>文章标题：</label>
+          <input type="text" name="title" class="form-control" id="topic_title" placeholder="请输入文章标题" value="{{.Topic.Title}}"/>
+        </div>
+        <label>文章分类：</label>
+        <div class="dropdown">
+          <select name="areaSelect" id="areaSelect">
+            <option value="">文章分类</option>
+            {{$Tid:=.Topic.Uid}}
+            {{range .Categories}}
+            <option value="{{.Id}}" {{if eq .Id $Tid}} selected="selected" {{end}}>{{.Title}}</option>
+            {{end}}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>文章内容：</label>
+          <textarea name="content" cols="30" rows="10" class="form-control">{{.Topic.Content}}</textarea>
+        </div>
+        <button type="submit" class="btn btn-default" onclick="return checkInput()">修改文章</button>
+      </form>
+    </div>
+  </div>
+</div>
+<!--text end-->
+<script type="text/javascript">
+  function checkInput(){
+        var topic_title = document.getElementById("topic_title")
+        var topic_areaSelect = document.getElementById("areaSelect")
+        if (topic_title.value.length == 0) {
+            alert("文章标题不能为空");
+            return false;
+        }
+        if (topic_areaSelect.value.length == 0) {
+            alert("请选择文章分类");
+            return false;
+        }
+        return true;
+    }
+</script>
+{{template "base/T.bottom.tpl" .}}
+</body>
+</html>

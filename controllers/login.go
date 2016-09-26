@@ -1,0 +1,57 @@
+package controllers
+
+import (
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
+)
+
+type LoginController struct {
+	beego.Controller
+}
+
+func (c *LoginController) Get() {
+	c.TplName = "login/login.html"
+	isExit := c.Input().Get("exit") == "true"
+	if isExit {
+		c.Ctx.SetCookie("uname", "", -1, "/")
+		c.Ctx.SetCookie("pwd", "", -1, "/")
+		c.Data["IsLogin"] = false
+		c.Redirect("/", 301)
+		return
+	}
+}
+
+func (c *LoginController) Post() {
+	// c.Ctx.WriteString(fmt.Sprintln(c.Input()))
+	uname := c.Input().Get("uname")
+	pwd := c.Input().Get("pwd")
+	autoLogin := c.Input().Get("autoLogin") == "on"
+
+	if beego.AppConfig.String("uname") == uname &&
+		beego.AppConfig.String("pwd") == pwd {
+		maxAge := 0
+		if autoLogin {
+			maxAge = 1<<31 - 1
+		}
+		c.Ctx.SetCookie("uname", uname, maxAge, "/")
+		c.Ctx.SetCookie("pwd", pwd, maxAge, "/")
+	}
+	c.Redirect("/", 301)
+	return
+}
+
+func checkAccount(ctx *context.Context) bool {
+	ck, err := ctx.Request.Cookie("uname")
+	if err != nil {
+		return false
+	}
+	uname := ck.Value
+	ck, err = ctx.Request.Cookie("pwd")
+	if err != nil {
+		return false
+	}
+	pwd := ck.Value
+	return beego.AppConfig.String("uname") == uname &&
+		beego.AppConfig.String("pwd") == pwd
+
+}

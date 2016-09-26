@@ -1,0 +1,40 @@
+{{template "base/T.header.tpl"}}
+<title>首页 - 我的beego 博客</title>
+</head>
+<body>
+<div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">{{template "base/T.navbar.tpl" .}}</div>
+</div>
+<!--text begin-->
+<div class="contariner" style="margin-top: 20px;">
+    <div class="col-md-9">
+        {{range .Topics}}
+        <div class="page-header">
+            <h1>
+                <a href="/topic/view/{{.Id}}">{{.Title}}</a>
+            </h1>
+            <h6 class="text-muted">
+                文章发表于{{date .Created "Y-m-d H:i:s"}}，共有{{.Views}}次浏览，{{.ReplyCount}}个评论
+            </h6>
+            <p>{{.Content}}</p>
+        </div>
+        {{end}}
+    </div>
+    <div class="col-md-3">
+        <div class="page-header">
+            <h3>文章分类</h3>
+            <ul>
+                {{range .Cates}}
+                <li>
+                    {{.Title}}
+                    <ul>
+                    <li>(<a href="/?cate={{.Id}}">{{.TopicCount}}</a>)</li>
+                    </ul>
+                </li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+</div>
+<!--text end-->{{template "base/T.bottom.tpl"}}</body>
+</html>

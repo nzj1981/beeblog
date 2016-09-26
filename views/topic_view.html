@@ -1,0 +1,17 @@
+{{template "base/T.header.tpl" .}}
+<title>{{.Topic.Title}}- 我的beego 博客</title>
+</head>
+<body>
+{{template "base/T.navbar.tpl" .}}
+<!--text begind-->
+<div class="zero-clipboard" style="margin-top: 20px;">
+  <div class="container">
+    <div class="page-header">
+      <h1>{{.Topic.Title}}</h1>
+      <h2>所属分类:{{.Cate.Title}}</h2>
+      <p>{{.Topic.Content}}</p>
+    </div>
+  </div>
+</div>
+<!--text end-->{{template "base/T.bottom.tpl" .}}</body>
+</html>
