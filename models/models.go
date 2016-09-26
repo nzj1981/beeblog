@@ -16,6 +16,7 @@ const (
 	_SQLITE3_DRIVER = "sqlite3"
 )
 
+//分类
 type Category struct {
 	Id              int64
 	Title           string    `orm:"null"`
@@ -25,6 +26,8 @@ type Category struct {
 	TopicCount      int64     `orm:"null"`
 	TopicLastUserId int64     `orm:"null"`
 }
+
+//文章
 type Topic struct {
 	Id              int64
 	Uid             int64     `orm:"null"`
@@ -40,6 +43,16 @@ type Topic struct {
 	ReplyLastUserId int64     `orm:"null"`
 }
 
+//评论
+type Comment struct {
+	Id      int64
+	Tid     int64
+	Name    string
+	Content string    `orm:"size(1000)"`
+	Created time.Time `orm:"auto_now_add;type(datetime);index"`
+}
+
+//`orm:"auto_now;type(datetime)"`
 func RegisterDB() {
 	//检查数据文件
 	if !com.IsExist(_DB_NAME) {
