@@ -61,7 +61,7 @@ func RegisterDB() {
 	}
 
 	//注册模型
-	orm.RegisterModel(new(Category), new(Topic))
+	orm.RegisterModel(new(Category), new(Topic), new(Comment))
 	//注册驱动
 	orm.RegisterDriver(_SQLITE3_DRIVER, orm.DRSqlite)
 	//注册默认数据库
@@ -78,7 +78,7 @@ func GetDate() time.Time {
 	//获取数据库时间值
 }
 
-//string to int
+//string to int64
 func GetInt64(id string) (int64, error) {
 	tidNum, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
