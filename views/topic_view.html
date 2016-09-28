@@ -5,13 +5,46 @@
 {{template "base/T.navbar.tpl" .}}
 <!--text begind-->
 <div class="zero-clipboard" style="margin-top: 20px;">
-  <div class="container">
-    <div class="page-header">
-      <h1>{{.Topic.Title}}</h1>
-      <h2>所属分类:{{.Cate.Title}}</h2>
-      <p>{{.Topic.Content}}</p>
+    <div class="container">
+        <div class="page-header">
+            <h1>{{.Topic.Title}}</h1>
+            <h2>所属分类:{{.Cate.Title}}</h2>
+            <p>{{.Topic.Content}}</p>
+        </div>
     </div>
-  </div>
+    <!-- 新增评论模块 begin -->
+    <div class="container">
+    <div class="page-header">
+    {{$tid := .Topic.Id}}
+    {{$isLogin := .IsLogin}}
+    {{range .Replies}}
+        <h3>
+            {{.Name}}
+            <small>
+                {{date .Created "Y-m-d H:i:s"}}
+                {{if $isLogin}}
+                <a href="/reply/delete?tid={{$tid}}&rid={{.Id}}">删除</a>
+                {{end}}
+            </small>
+        </h3>
+        {{.Content}}
+        {{end}}
+    </div>
+        <h3>本文回复</h3>
+        <form method="post" action="/reply/add">
+            <input type="hidden" name="tid" value="{{.Topic.Id}}">
+            <div class="form-group">
+                <label>显示昵称：</label>
+                <input type="text" name="nickname" class="form-control"></div>
+            <div class="form-group">
+                <label>内容:</label>
+                <textarea class="form-control" name="content" id="" clos="30" rows="10"></textarea>
+            </div>
+            <button class="btn btn-defalut" type="submit">提交回复</button>
+        </form>
+    </div>
+
+    <!-- 新增评论模块 end -->
 </div>
 <!--text end-->{{template "base/T.bottom.tpl" .}}</body>
 </html>

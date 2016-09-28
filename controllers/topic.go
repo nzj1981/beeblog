@@ -56,7 +56,8 @@ func (c *TopicController) View() {
 	c.TplName = "topic_view.html"
 	c.Data["IsLogin"] = checkAccount(c.Ctx)
 	// fmt.Println("*************************", c.Ctx.Input.Param("0"), "++++++++", c.Ctx.Input.Param("1"))
-	topic, err := models.TopicGet(c.Ctx.Input.Param("0"))
+	tid := c.Ctx.Input.Param("0")
+	topic, err := models.TopicGet(tid)
 	if err != nil {
 		beego.Error(err)
 		c.Redirect("/", 302)
@@ -74,6 +75,15 @@ func (c *TopicController) View() {
 	c.Data["Topic"] = topic
 	// c.Data["Tid"] = c.Ctx.Input.Param("0")
 	// c.Data["Uid"] = c.Ctx.Input.Param("1")
+
+	// 获取评论回复begin
+	replies, err := models.RepliesGetAll(tid, true)
+	if err != nil {
+		beego.Error(err)
+		return
+	}
+	c.Data["Replies"] = replies
+	// 获取评论回复end
 }
 func (c *TopicController) Modify() {
 	c.TplName = "topic_modify.html"

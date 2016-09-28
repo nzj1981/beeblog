@@ -86,6 +86,75 @@ func GetInt64(id string) (int64, error) {
 	}
 	return tidNum, err
 }
+
+//评论
+func ReplyAdd(tid, nickname, content string) error {
+	tidNum, err := GetInt64(tid)
+	reply := &Comment{
+		Tid:     tidNum,
+		Name:    nickname,
+		Content: content,
+		Created: GetDate(),
+	}
+	o := orm.NewOrm()
+	_, err = o.Insert(reply)
+	// 向文章表增加最后回复时间和回复次数 begin
+	topic := new(Topic)
+	qs := o.QueryTable("topic")
+	err = qs.Filter("id", tidNum).One(topic)
+	if err != nil {
+		return err
+	}
+	topic.ReplyTime = GetDate()
+	topic.ReplyCount++
+	_, err = o.Update(topic)
+
+	// 向文章表增加最后回复时间和回复次数 end
+	return err
+
+}
+func RepliesGetAll(tid string, isDesc bool) (replies []*Comment, err error) {
+	tidNum, err := GetInt64(tid)
+	replies = make([]*Comment, 0)
+	o := orm.NewOrm()
+	qs := o.QueryTable("comment")
+	qs = qs.Filter("tid", tidNum)
+	if isDesc {
+		_, err = qs.OrderBy("-created").All(&replies)
+	} else {
+		_, err = qs.All(&replies)
+	}
+	return replies, err
+}
+func ReplyDelete(tid, rid string) error {
+	tidNum, err := GetInt64(tid)
+	ridNum, err := GetInt64(rid)
+	o := orm.NewOrm()
+	reply := &Comment{Id: ridNum}
+	var oldtid int64
+	if o.Read(reply) == nil {
+		oldtid = reply.Tid
+		reply.Id = ridNum
+		o.Delete(reply)
+	}
+	topic := new(Topic)
+	if oldtid == tidNum {
+		qs := o.QueryTable("topic")
+		err = qs.Filter("id", oldtid).One(topic)
+		if err != nil {
+			return err
+		}
+		topic.Created = GetDate()
+		topic.ReplyCount--
+		_, err = o.Update(topic)
+	}
+	// 更新文章表中最后回复时间和回复总数begin
+
+	// 更新文章表中最后回复时间和回复总数end
+	return err
+}
+
+// 文章
 func TopicAdd(title, content, uid string) error {
 	timeNow := GetDate()
 	cid, _ := GetInt64(uid)
