@@ -137,6 +137,7 @@ func ReplyDelete(tid, rid string) error {
 		reply.Id = ridNum
 		o.Delete(reply)
 	}
+	// 更新文章表中最后回复时间和回复总数begin
 	topic := new(Topic)
 	if oldtid == tidNum {
 		qs := o.QueryTable("topic")
@@ -144,11 +145,9 @@ func ReplyDelete(tid, rid string) error {
 		if err != nil {
 			return err
 		}
-		topic.Created = GetDate()
 		topic.ReplyCount--
 		_, err = o.Update(topic)
 	}
-	// 更新文章表中最后回复时间和回复总数begin
 
 	// 更新文章表中最后回复时间和回复总数end
 	return err
@@ -169,22 +168,27 @@ func TopicAdd(title, content, uid string) error {
 	//判断重复提交 begin
 	qs := o.QueryTable("topic")
 	err := qs.Filter("title", title).One(topic)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	//判断重复提交 end
 	// fmt.Println(topic)
 	_, err = o.Insert(topic)
+	if err != nil {
+		return err
+	}
 	//update topic_time,topic_count views begin
 	category := new(Category)
 	qs = o.QueryTable("category")
 	err = qs.Filter("id", cid).One(category)
-	if err != nil {
-		return err
+	if err == nil {
+		category.TopicCount++
+		category.TopicTime = GetDate()
+		_, err = o.Update(category)
+		if err != nil {
+			return nil
+		}
 	}
-	category.TopicTime = GetDate()
-	category.TopicCount++
-	_, err = o.Update(category)
 	//update end
 	return err
 }
@@ -232,7 +236,10 @@ func TopicModify(tid, title, content, uid string) error {
 		topic.Title = title
 		topic.Content = content
 		topic.Updated = GetDate()
-		o.Update(topic)
+		_, err := o.Update(topic)
+		if err != nil {
+			return err
+		}
 	}
 	//修改统计文章分类次数、文章分类最后变更时间 begin
 	if oldUid != cidNum {
@@ -245,6 +252,9 @@ func TopicModify(tid, title, content, uid string) error {
 		category.TopicTime = GetDate()
 		category.TopicCount--
 		_, err = o.Update(category)
+		if err != nil {
+			return err
+		}
 
 		err = qs.Filter("id", cidNum).One(category)
 		if err != nil {
@@ -253,6 +263,9 @@ func TopicModify(tid, title, content, uid string) error {
 		category.TopicTime = GetDate()
 		category.TopicCount++
 		_, err = o.Update(category)
+		if err != nil {
+			return err
+		}
 	}
 	//修改统计文章分类次数、文章分类最后变更时间 end
 	return nil
