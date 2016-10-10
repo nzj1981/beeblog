@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
@@ -131,22 +132,30 @@ func ReplyDelete(tid, rid string) error {
 	ridNum, err := GetInt64(rid)
 	o := orm.NewOrm()
 	reply := &Comment{Id: ridNum}
-	var oldtid int64
 	if o.Read(reply) == nil {
-		oldtid = reply.Tid
 		reply.Id = ridNum
 		o.Delete(reply)
 	}
 	// 更新文章表中最后回复时间和回复总数begin
-	topic := new(Topic)
-	if oldtid == tidNum {
-		qs := o.QueryTable("topic")
-		err = qs.Filter("id", oldtid).One(topic)
+	replies := make([]*Comment, 0)
+	qs := o.QueryTable("comment")
+	_, err = qs.Filter("tid", tidNum).OrderBy("-created").All(&replies)
+	if err != nil {
+		return err
+	}
+	topic := &Topic{Id: tidNum}
+	if o.Read(topic) == nil {
+		if len(replies) != 0 {
+			topic.ReplyTime = replies[0].Created
+			topic.ReplyCount = int64(len(replies))
+		} else {
+			topic.ReplyTime = GetDate()
+			topic.ReplyCount = int64(len(replies))
+		}
+		_, err = o.Update(topic)
 		if err != nil {
 			return err
 		}
-		topic.ReplyCount--
-		_, err = o.Update(topic)
 	}
 
 	// 更新文章表中最后回复时间和回复总数end
@@ -168,7 +177,7 @@ func TopicAdd(title, content, uid string) error {
 	//判断重复提交 begin
 	qs := o.QueryTable("topic")
 	err := qs.Filter("title", title).One(topic)
-	if err != nil {
+	if err == nil {
 		return err
 	}
 	//判断重复提交 end
@@ -185,9 +194,6 @@ func TopicAdd(title, content, uid string) error {
 		category.TopicCount++
 		category.TopicTime = GetDate()
 		_, err = o.Update(category)
-		if err != nil {
-			return nil
-		}
 	}
 	//update end
 	return err
@@ -282,16 +288,38 @@ func TopicDelete(tid string) error {
 	}
 	// _, err = o.Delete(topic)
 	//更新分类中文章统计数 begin
-	cate := new(Category)
-	if uid > 0 {
-		qs := o.QueryTable("category")
-		err = qs.Filter("id", uid).One(cate)
+	// cate := new(Category)
+	// if uid > 0 {
+	// 	qs := o.QueryTable("category")
+	// 	err = qs.Filter("id", uid).One(cate)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	cate.TopicTime = GetDate()
+	// 	cate.TopicCount--
+	// 	_, err = o.Update(cate)
+	// }
+
+	topics := make([]*Topic, 0)
+	qs := o.QueryTable("topic")
+	_, err = qs.Filter("uid", uid).OrderBy("-created").All(&topics)
+	if err != nil {
+		return err
+	}
+	fmt.Println("**************************", topics, len(topics))
+	cate := &Category{Id: uid}
+	if o.Read(cate) == nil {
+		if len(topics) == 0 {
+			cate.TopicTime = GetDate()
+			cate.TopicCount = 0
+		} else {
+			cate.TopicTime = topics[0].Created
+			cate.TopicCount = int64(len(topics))
+		}
+		_, err = o.Update(cate)
 		if err != nil {
 			return err
 		}
-		cate.TopicTime = GetDate()
-		cate.TopicCount--
-		_, err = o.Update(cate)
 	}
 	//更新分类中文章统计数 end
 	return err

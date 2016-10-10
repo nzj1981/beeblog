@@ -16,9 +16,10 @@
 <tr>
 <th>序号</th>
 <th>文章名称</th>
-<th>最后更新</th>
+<th>最后更新时间</th>
 <th>浏览</th>
 <th>回复数</th>
+<th>最后回复时间</th>
 <th>操作</th>
 </tr>
 </thead>
@@ -31,6 +32,7 @@
 <th>{{date .Updated "Y-m-d H:i:s"}}</th>
 <th>{{.Views}}</th>
 <th>{{.ReplyCount}}</th>
+<th>{{date .ReplyTime "Y-m-d H:i:s"}}</th>
 <th>
 {{if $login}}
 <a href="/topic/modify?tid={{.Id}}">修改</a>|<a href="/topic/delete/{{.Id}}">删除</a>
