@@ -48,9 +48,9 @@ type Topic struct {
 type Comment struct {
 	Id      int64
 	Tid     int64
-	Name    string
-	Content string    `orm:"size(1000)"`
-	Created time.Time `orm:"auto_now_add;type(datetime);index"`
+	Name    string    `orm:"null"`
+	Content string    `orm:"size(1000);null"`
+	Created time.Time `orm:"auto_now_add;type(datetime);index;null"`
 }
 
 //`orm:"auto_now;type(datetime)"`
@@ -86,6 +86,13 @@ func GetInt64(id string) (int64, error) {
 		return 0, err
 	}
 	return tidNum, err
+}
+
+//设定一个字符转换日期类型
+func StrToDate(str string) time.Time {
+	//2006-01-02 03:04:05 PM是格式化日期类型标准，1900-01-02 03:04:05 PM要格式化成日期类型字符，如果字符1900-01-02不标准插入数据库是一个空值。
+	dateTm, _ := time.Parse("2006-01-02 03:04:05 PM", str)
+	return dateTm
 }
 
 //评论
@@ -143,13 +150,15 @@ func ReplyDelete(tid, rid string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(StrToDate("2016-10-10"), "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
 	topic := &Topic{Id: tidNum}
 	if o.Read(topic) == nil {
 		if len(replies) != 0 {
 			topic.ReplyTime = replies[0].Created
 			topic.ReplyCount = int64(len(replies))
 		} else {
-			topic.ReplyTime = GetDate()
+			topic.ReplyTime = StrToDate("2016-10-10")
 			topic.ReplyCount = int64(len(replies))
 		}
 		_, err = o.Update(topic)
@@ -213,7 +222,6 @@ func TopicGetAll(cateId string, isDesc bool) ([]*Topic, error) {
 	} else {
 		_, err = qs.All(&topics)
 	}
-
 	return topics, err
 }
 
@@ -286,31 +294,17 @@ func TopicDelete(tid string) error {
 		topic.Id = tidNum
 		o.Delete(topic)
 	}
-	// _, err = o.Delete(topic)
 	//更新分类中文章统计数 begin
-	// cate := new(Category)
-	// if uid > 0 {
-	// 	qs := o.QueryTable("category")
-	// 	err = qs.Filter("id", uid).One(cate)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	cate.TopicTime = GetDate()
-	// 	cate.TopicCount--
-	// 	_, err = o.Update(cate)
-	// }
-
 	topics := make([]*Topic, 0)
 	qs := o.QueryTable("topic")
 	_, err = qs.Filter("uid", uid).OrderBy("-created").All(&topics)
 	if err != nil {
 		return err
 	}
-	fmt.Println("**************************", topics, len(topics))
 	cate := &Category{Id: uid}
 	if o.Read(cate) == nil {
 		if len(topics) == 0 {
-			cate.TopicTime = GetDate()
+			cate.TopicTime = StrToDate("2016-10-10")
 			cate.TopicCount = 0
 		} else {
 			cate.TopicTime = topics[0].Created
@@ -322,6 +316,17 @@ func TopicDelete(tid string) error {
 		}
 	}
 	//更新分类中文章统计数 end
+	//删除该文章下的所有评论 begin
+	replies := make([]*Comment, 0)
+	qs = o.QueryTable("comment")
+	_, err = qs.Filter("tid", tidNum).All(&replies)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(replies); i++ {
+		o.Delete(replies[i])
+	}
+	//删除该文章下的所有评论 end
 	return err
 }
 
