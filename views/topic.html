@@ -1,5 +1,5 @@
 {{template "base/T.header.tpl" .}}
-  <title>文章- 我的beego 博客</title>
+<title>文章- 我的beego 博客</title>
 </head>
 <body>
 {{template "base/T.navbar.tpl" .}}
@@ -7,45 +7,56 @@
 <div class="zero-clipboard" style="margin-top: 20px;">
     <div class="container">
         <div class="page-header">
-<h1>文章列表</h1>
-{{if .IsLogin}}
-<a href="/topic/add" class="btn btn-default">添加文章</a>
-{{end}}
-<table class="table table-striped">
-<thead>
-<tr>
-<th>序号</th>
-<th>文章名称</th>
-<th>最后更新时间</th>
-<th>浏览</th>
-<th>回复数</th>
-<th>最后回复时间</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-{{$login := .IsLogin}}
-{{range .Topics}}
-<tr>
-<th>{{.Id}}</th>
-<th><a href="/topic/view/{{.Id}}">{{.Title}}</a></th>
-<th>{{date .Updated "Y-m-d H:i:s"}}</th>
-<th>{{.Views}}</th>
-<th>{{.ReplyCount}}</th>
-<th>{{date .ReplyTime "Y-m-d H:i:s"}}</th>
-<th>
-{{if $login}}
-<a href="/topic/modify?tid={{.Id}}">修改</a>|<a href="/topic/delete/{{.Id}}">删除</a>
-{{end}}
-</th>
-</tr>
-{{end}}
-</tbody>
-</table>
+            <h1>文章列表</h1>
+            {{if .IsLogin}}
+            <a href="/topic/add" class="btn btn-default">添加文章</a>
+            {{end}}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>文章名称</th>
+                        <th>文章标签</th>
+                        <th>最后更新时间</th>
+                        <th>浏览</th>
+                        <th>回复数</th>
+                        <th>最后回复时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{$login := .IsLogin}}
+                    {{range .Topics}}
+                    <tr>
+                        <th>
+                        {{.Id}}
+                        </th>
+                        <th>
+                            <a href="/topic/view/{{.Id}}">{{.Title}}</a>
+                        </th>
+                        <th>
+                            <!-- {{range $.Lables}}
+                            <a href="/?lable={{.}}">{{.}}</a>
+                            {{end}} -->
+                            {{.Lables}}
+                        </th>
+                        <th>{{date .Updated "Y-m-d H:i:s"}}</th>
+                        <th>{{.Views}}</th>
+                        <th>{{.ReplyCount}}</th>
+                        <th>{{date .ReplyTime "Y-m-d H:i:s"}}</th>
+                        <th>
+                            {{if $login}}
+                            <a href="/topic/modify?tid={{.Id}}">修改</a>
+                            |
+                            <a href="/topic/delete/{{.Id}}">删除</a>
+                            {{end}}
+                        </th>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-<!--text end-->
-{{template "base/T.bottom.tpl" .}}
-</body>
+<!--text end-->{{template "base/T.bottom.tpl" .}}</body>
 </html>

@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"beeblog/models"
+	"fmt"
 	"github.com/astaxie/beego"
 	"strconv"
+	"strings"
 )
 
 type TopicController struct {
@@ -13,11 +15,15 @@ type TopicController struct {
 func (c *TopicController) Get() {
 	c.Data["IsTopic"] = true
 	c.Data["IsLogin"] = checkAccount(c.Ctx)
-	topics, err := models.TopicGetAll("", false)
+	topics, err := models.TopicGetAll("", "", false)
 	if err != nil {
 		beego.Error(err)
 	} else {
+		/*		for _, lable := range topics {
+				c.Data["Lables"] = strings.Split(lable.Lables, " ")
+			}*/
 		c.Data["Topics"] = topics
+		fmt.Println(topics, "aaaaaaaaaaaaaaaaaaaaaa")
 	}
 	c.TplName = "topic.html"
 }
@@ -31,11 +37,12 @@ func (c *TopicController) Post() {
 	title := c.Input().Get("title")
 	content := c.Input().Get("content")
 	uid := c.Input().Get("areaSelect")
+	lable := c.Input().Get("lable")
 	var err error
 	if len(tid) == 0 {
-		err = models.TopicAdd(title, content, uid)
+		err = models.TopicAdd(title, content, uid, lable)
 	} else {
-		err = models.TopicModify(tid, title, content, uid)
+		err = models.TopicModify(tid, title, content, uid, lable)
 	}
 	if err != nil {
 		beego.Error(err)
@@ -63,6 +70,9 @@ func (c *TopicController) View() {
 		c.Redirect("/", 302)
 		return
 	}
+	//获取文章标签分类的数组 begin
+	c.Data["Lables"] = strings.Split(topic.Lables, " ")
+	//获取文章标签分类的数组 end
 	//根据文章分类id获取文章分类标题 begin
 	uid := strconv.FormatInt(topic.Uid, 10)
 	c.Data["Cate"], err = models.GetCategory(uid)

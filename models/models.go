@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,6 +34,7 @@ type Topic struct {
 	Id              int64
 	Uid             int64     `orm:"null"`
 	Title           string    `orm:"null"`
+	Lables          string    `orm:"null"`
 	Content         string    `orm:"size(5000);null"`
 	Attachment      string    `orm:"null"`
 	Created         time.Time `orm:"index;null"`
@@ -172,13 +174,16 @@ func ReplyDelete(tid, rid string) error {
 }
 
 // 文章
-func TopicAdd(title, content, uid string) error {
+func TopicAdd(title, content, uid, lable string) error {
+	//处理标签
+	lable = "$" + strings.Join(strings.Split(lable, " "), "#$") + "#"
 	timeNow := GetDate()
 	cid, _ := GetInt64(uid)
 	o := orm.NewOrm()
 	topic := &Topic{
 		Uid:     cid,
 		Title:   title,
+		Lables:  lable,
 		Content: content,
 		Created: timeNow,
 		Updated: timeNow,
@@ -207,7 +212,7 @@ func TopicAdd(title, content, uid string) error {
 	//update end
 	return err
 }
-func TopicGetAll(cateId string, isDesc bool) ([]*Topic, error) {
+func TopicGetAll(cateId, lable string, isDesc bool) ([]*Topic, error) {
 	//add topic uid query
 	o := orm.NewOrm()
 	topics := make([]*Topic, 0)
@@ -218,9 +223,16 @@ func TopicGetAll(cateId string, isDesc bool) ([]*Topic, error) {
 			uid, _ := GetInt64(cateId)
 			qs = qs.Filter("uid", uid)
 		}
+		if len(lable) > 0 {
+			qs = qs.Filter("lables__contains", "$"+lable+"#")
+		}
 		_, err = qs.OrderBy("-created").All(&topics)
 	} else {
 		_, err = qs.All(&topics)
+	}
+	for _, topic := range topics {
+		//处理文章标签转换
+		topic.Lables = strings.Replace(strings.Replace(topic.Lables, "#", " ", -1), "$", "", -1)
 	}
 	return topics, err
 }
@@ -236,17 +248,22 @@ func TopicGet(tid string) (*Topic, error) {
 	}
 	topic.Views++
 	_, err = o.Update(topic)
+	//处理文章标签转换
+	topic.Lables = strings.Replace(strings.Replace(topic.Lables, "#", " ", -1), "$", "", -1)
 	return topic, err
 }
-func TopicModify(tid, title, content, uid string) error {
+func TopicModify(tid, title, content, uid, lable string) error {
 	tidNum, _ := GetInt64(tid)
 	cidNum, _ := GetInt64(uid)
+	//处理标签
+	lable = "$" + strings.Join(strings.Split(lable, " "), "#$") + "#"
 	o := orm.NewOrm()
 	topic := &Topic{Id: tidNum}
 	var oldUid int64
 	if o.Read(topic) == nil {
 		oldUid = topic.Uid
 		topic.Uid = cidNum
+		topic.Lables = lable
 		topic.Title = title
 		topic.Content = content
 		topic.Updated = GetDate()
