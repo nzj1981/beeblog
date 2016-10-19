@@ -5,7 +5,6 @@ import (
 	_ "beeblog/routers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"os"
 )
 
 func init() {
@@ -22,10 +21,8 @@ func main() {
 	// orm.DebugLog = orm.NewLog(w)
 	//自动建表
 	orm.RunSyncdb("default", false, true)
-	//w创建附件目录
-	os.Mkdir("attachment", os.ModePerm)
 	//作为静态文件处理方法
-	beego.SetStaticPath("/attachment", "attachment")
+	// beego.SetStaticPath("/attachment", "attachment")
 	//启动beego
 	beego.Run()
 }

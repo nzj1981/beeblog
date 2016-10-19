@@ -3,6 +3,7 @@ package routers
 import (
 	"beeblog/controllers"
 	"github.com/astaxie/beego"
+	"os"
 )
 
 func init() {
@@ -16,4 +17,7 @@ func init() {
 	beego.Router("/reply", &controllers.ReplyController{})
 	beego.Router("/reply/add", &controllers.ReplyController{}, "post:Add")
 	beego.Router("/reply/delete", &controllers.ReplyController{}, "get:Delete")
+	beego.Router("/attachment/:all", &controllers.AttachController{})
+	//w创建附件目录
+	os.Mkdir("attachment", os.ModePerm)
 }

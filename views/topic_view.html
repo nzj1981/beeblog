@@ -5,37 +5,44 @@
 {{template "base/T.navbar.tpl" .}}
 <!--text begind-->
 <div class="zero-clipboard" style="margin-top: 20px;">
-{{$lables := .Lables}}
+    {{$lables := .Lables}}
+    {{with .Topic}}
     <div class="container">
         <div class="page-header">
-            <h1>{{.Topic.Title}}</h1>
-            <h2>所属分类:{{.Cate.Title}}</h2>
-            <h3>文章标签:
+            <h1>{{.Title}}</h1>
+            <h2>所属分类:{{.Title}}</h2>
+            <h3>
+                文章标签:
             {{range $lables}}
-            <a href="/?lable={{.}}">{{.}}</a>
-            {{end}}
+                <a href="/?lable={{.}}">{{.}}</a>
+                {{end}}
             </h3>
-            <p>{{htmlunquote .Topic.Content}}</p>
+            <p>{{htmlunquote .Content}}</p>
+            <h5>
+                附件:
+                <a href="/attachment/{{.Attachment}}">{{.Attachment}}</a>
+            </h5>
         </div>
     </div>
+    {{end}}
     <!-- 新增评论模块 begin -->
     <div class="container">
-    <div class="page-header">
-    {{$tid := .Topic.Id}}
+        <div class="page-header">
+            {{$tid := .Topic.Id}}
     {{$isLogin := .IsLogin}}
     {{range .Replies}}
-        <h3>
-            {{.Name}}
-            <small>
-                {{date .Created "Y-m-d H:i:s"}}
+            <h3>
+                {{.Name}}
+                <small>
+                    {{date .Created "Y-m-d H:i:s"}}
                 {{if $isLogin}}
-                <a href="/reply/delete?tid={{$tid}}&rid={{.Id}}">删除</a>
-                {{end}}
-            </small>
-        </h3>
-        {{.Content}}
+                    <a href="/reply/delete?tid={{$tid}}&rid={{.Id}}">删除</a>
+                    {{end}}
+                </small>
+            </h3>
+            {{.Content}}
         {{end}}
-    </div>
+        </div>
         <h3>本文回复</h3>
         <form method="post" action="/reply/add">
             <input type="hidden" name="tid" value="{{.Topic.Id}}">

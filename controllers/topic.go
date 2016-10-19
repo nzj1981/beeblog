@@ -93,7 +93,7 @@ func (c *TopicController) Post() {
 		//保存附件
 		attachment = fh.Filename
 		beego.Info(attachment)
-		err = c.SaveToFile("attchment", path.Join("attachment", attachment))
+		err = c.SaveToFile("attachment", path.Join("attachment", attachment))
 		if err != nil {
 			beego.Error(err)
 		}
@@ -101,7 +101,7 @@ func (c *TopicController) Post() {
 	if len(tid) == 0 {
 		err = models.TopicAdd(title, content, uid, lable, attachment)
 	} else {
-		err = models.TopicModify(tid, title, content, uid, lable)
+		err = models.TopicModify(tid, title, content, uid, lable, attachment)
 	}
 	if err != nil {
 		beego.Error(err)

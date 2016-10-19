@@ -253,27 +253,34 @@ func TopicGet(tid string) (*Topic, error) {
 	topic.Lables = strings.Replace(strings.Replace(topic.Lables, "#", " ", -1), "$", "", -1)
 	return topic, err
 }
-func TopicModify(tid, title, content, uid, lable string) error {
+func TopicModify(tid, title, content, uid, lable, attachment string) error {
 	tidNum, _ := GetInt64(tid)
 	cidNum, _ := GetInt64(uid)
 	//处理标签
 	lable = "$" + strings.Join(strings.Split(lable, " "), "#$") + "#"
 	o := orm.NewOrm()
 	topic := &Topic{Id: tidNum}
-	var oldUid int64
+	var (
+		oldUid    int64
+		oldAttach string
+	)
 	if o.Read(topic) == nil {
 		oldUid = topic.Uid
+		oldAttach = topic.Attachment
 		topic.Uid = cidNum
 		topic.Lables = lable
 		topic.Title = title
 		topic.Content = content
+		if len(attachment) > 0 {
+			topic.Attachment = attachment
+		}
 		topic.Updated = GetDate()
 		_, err := o.Update(topic)
 		if err != nil {
 			return err
 		}
 	}
-	//修改统计文章分类次数、文章分类最后变更时间 begin
+	//修改统计文章分类的文章数、文章分类最后变更时间 begin
 	if oldUid != cidNum {
 		category := new(Category)
 		qs := o.QueryTable("category")
@@ -299,7 +306,12 @@ func TopicModify(tid, title, content, uid, lable string) error {
 			return err
 		}
 	}
-	//修改统计文章分类次数、文章分类最后变更时间 end
+	//修改统计文章分类的文章数、文章分类最后变更时间 end
+	//删除旧的附件 begin
+	if len(attachment) > 0 {
+		os.Remove(path.Join("attachment", oldAttach))
+	}
+	//删除旧的附件 end
 	return nil
 }
 func TopicDelete(tid string) error {
