@@ -26,35 +26,36 @@
                 </thead>
                 <tbody>
                     {{$login := .IsLogin}}
-                    {{range .Topics}}
+                    {{range $index,$topic:=.List}}
                     <tr>
                         <th>
-                        {{.Id}}
+                        {{$index}}
                         </th>
                         <th>
-                            <a href="/topic/view/{{.Id}}">{{.Title}}</a>
+                            <a href="/topic/view/{{.Id}}">{{$topic.Title}}</a>
                         </th>
-                        <th>
-                            <!-- {{range $.Lables}}
-                            <a href="/?lable={{.}}">{{.}}</a>
-                            {{end}} -->
-                            {{.Lables}}
-                        </th>
-                        <th>{{date .Updated "Y-m-d H:i:s"}}</th>
-                        <th>{{.Views}}</th>
-                        <th>{{.ReplyCount}}</th>
-                        <th>{{date .ReplyTime "Y-m-d H:i:s"}}</th>
+                       <!-- <th>
+                            <a href="/?lable="></a>
+                        </th>-->
+						<th>{{$topic.Lables}}</th>
+                        <th>{{date $topic.Updated "Y-m-d H:i:s"}}</th>
+                        <th>{{$topic.Views}}</th>
+                        <th>{{$topic.ReplyCount}}</th>
+                        <th>{{date $topic.ReplyTime "Y-m-d H:i:s"}}</th>
                         <th>
                             {{if $login}}
-                            <a href="/topic/modify?tid={{.Id}}">修改</a>
+                            <a href="/topic/modify?tid={{$topic.Id}}">修改</a>
                             |
-                            <a href="/topic/delete/{{.Id}}">删除</a>
+                            <a href="/topic/delete/{{$topic.Id}}">删除</a>
                             {{end}}
                         </th>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
+			<div class="meneame"><span>共{{.TotalItem}}记录,{{.PageSize}}/{{.TotalPages}},条/页</span>
+      <div style="float:left;">{{.PagerHtml}}</div>
+  </div>
         </div>
     </div>
 </div>

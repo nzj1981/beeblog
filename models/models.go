@@ -174,19 +174,20 @@ func ReplyDelete(tid, rid string) error {
 }
 
 // 文章
-func TopicAdd(title, content, uid, lable string) error {
+func TopicAdd(title, content, uid, lable, attachment string) error {
 	//处理标签
 	lable = "$" + strings.Join(strings.Split(lable, " "), "#$") + "#"
 	timeNow := GetDate()
 	cid, _ := GetInt64(uid)
 	o := orm.NewOrm()
 	topic := &Topic{
-		Uid:     cid,
-		Title:   title,
-		Lables:  lable,
-		Content: content,
-		Created: timeNow,
-		Updated: timeNow,
+		Uid:        cid,
+		Title:      title,
+		Lables:     lable,
+		Attachment: attachment,
+		Content:    content,
+		Created:    timeNow,
+		Updated:    timeNow,
 	}
 	//判断重复提交 begin
 	qs := o.QueryTable("topic")
