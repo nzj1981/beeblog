@@ -26,38 +26,48 @@
                 </thead>
                 <tbody>
                     {{$login := .IsLogin}}
+                    {{$PreItem := .PreItem}}
+                    <!-- 获取序列函数 -->
+                    {{$funcNum := .FuncNum}}
+                    <!-- 文章标签的转换 -->
+                    {{$strSlice:=.StrSlice}}
                     {{range $index,$topic:=.List}}
                     <tr>
                         <th>
-                        {{$index}}
+                        {{call $funcNum $index $PreItem}} 
                         </th>
                         <th>
                             <a href="/topic/view/{{.Id}}">{{$topic.Title}}</a>
                         </th>
-                       <!-- <th>
-                            <a href="/?lable="></a>
-                        </th>-->
-						<th>{{$topic.Lables}}</th>
-                        <th>{{date $topic.Updated "Y-m-d H:i:s"}}</th>
-                        <th>{{$topic.Views}}</th>
-                        <th>{{$topic.ReplyCount}}</th>
-                        <th>{{date $topic.ReplyTime "Y-m-d H:i:s"}}</th>
+                        <!-- 给文章标签加上链接 -->
                         <th>
-                            {{if $login}}
-                            <a href="/topic/modify?tid={{$topic.Id}}">修改</a>
-                            |
-                            <a href="/topic/delete/{{$topic.Id}}">删除</a>
-                            {{end}}
-                        </th>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-			<div class="meneame"><span>共{{.TotalItem}}记录,{{.PageSize}}/{{.TotalPages}},条/页</span>
-      <div style="float:left;">{{.PagerHtml}}</div>
-  </div>
+                        {{range call $strSlice $topic.Lables}}
+                        <a href="/?lable={{.}}">{{.}}</a>
+                        {{end}}
+                    </th>
+                    <th>{{date $topic.Updated "Y-m-d H:i:s"}}</th>
+                    <th>{{$topic.Views}}</th>
+                    <th>{{$topic.ReplyCount}}</th>
+                    <th>{{date $topic.ReplyTime "Y-m-d H:i:s"}}</th>
+                    <th>
+                        {{if $login}}
+                        <a href="/topic/modify?tid={{$topic.Id}}">修改</a>
+                        |
+                        <a href="/topic/delete/{{$topic.Id}}">删除</a>
+                        {{end}}
+                    </th>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <div class="meneame">
+            <span>
+                显示{{$PreItem}}-{{.NextItem}}记录,共{{.TotalItem}}记录、{{.TotalPages}}页
+            </span>
+            <div style="float:left;">{{.PagerHtml}}</div>
         </div>
     </div>
+</div>
 </div>
 <!--text end-->{{template "base/T.bottom.tpl" .}}</body>
 </html>

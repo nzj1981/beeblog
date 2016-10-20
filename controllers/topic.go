@@ -49,28 +49,50 @@ func (c *TopicController) Get() {
 	//第三个:返回总记录数
 	//第四个:返回总页数
 	totalItem, totalpages, rs, pagerhtml := pager.GetPagerLinks(&po, c.Ctx)
-	rs.QueryRows(&tTopic) //把当前页面的数据序列化进一个切片内
-	//topic中lables标签
-	//	for i, _ := range tTopic {
-	//		tTopic[i].Lables = strings.Replace(strings.Replace(tTopic[i].Lables, "#", " ", -1), "$", "", -1)
-	//		tTopic[i].Lables = strings.Split(tTopic[i].Lables, " ")
-
-	//	}
-	//	tTopic.Lables = strings.Replace(strings.Replace(tTopic.Lables, "#", " ", -1), "$", "", -1)
-
-	c.Data["List"] = tTopic //把当前页面的数据传递到前台
-	c.Data["PagerHtml"] = pagerhtml
-	c.Data["TotalItem"] = totalItem
-	c.Data["PageSize"] = po.PageSize
-	c.Data["TotalPages"] = totalpages
+	rs.QueryRows(&tTopic)           //把当前页面的数据序列化进一个切片内
+	c.Data["List"] = tTopic         //把当前页面的数据传递到前台
+	c.Data["PagerHtml"] = pagerhtml //分页组件
+	c.Data["TotalItem"] = totalItem //总记录数
+	// c.Data["PageSize"] = po.PageSize                       //每页记录数
+	preItem := (po.Currentpage-1)*po.PageSize + 1 //当前页开始记录数
+	nextItem := po.Currentpage * po.PageSize      //当前页结束记录数
+	if nextItem > totalItem {
+		nextItem = totalItem
+	}
+	c.Data["PreItem"] = preItem
+	c.Data["NextItem"] = nextItem
+	c.Data["TotalPages"] = totalpages //总页数
+	c.Data["FuncNum"] = funcNum       //每页记录数序列
+	c.Data["StrSlice"] = strSlice     //文章标签的转换
 	//增加分页功能 end
 	c.TplName = "topic.html"
 }
 
+//通过当前页开始记录数与当前记录索引数，得出每页的序列数
+func funcNum(m, n int) int {
+	num := m + n
+	return num
+}
+
+//文章标签转换slice topic中lables标签
+func strSlice(str string) []string {
+	str = strings.Replace(strings.Replace(str, "#", " ", -1), "$", "", -1)
+	strs := strings.Split(str, " ")
+	return strs
+}
+
 //获取序列号
-//func getNum(pageSize,pageNo,index string) string{
-//	return strconv.Itoa(strconv.Atoi(pageSize)*strconv.Atoi(pageNo)-strconv.Atoi(pageSize))+strconv.Atoi(index)+1)
-//}
+/*func getList(pageSize, Currentpage, totalItem int, list []models.Topic) []int {
+	nums := make([]int, 0)
+	for i := 0; i < pageSize; i++ {
+		seq := Currentpage*pageSize - pageSize + i + 1
+		if seq > totalItem {
+
+		}
+		nums = append(nums, seq, list[i])
+	}
+	return nums
+}*/
 func (c *TopicController) Post() {
 	if !checkAccount(c.Ctx) {
 		c.Redirect("/login", 302)
